@@ -1,0 +1,52 @@
+name: Automated Commits
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Morning commits (4am-6am every 10 minutes)
+    # Note: GitHub Actions uses UTC time, so adjust based on your timezone
+    # The following is for 4am-6am UTC. Adjust as needed.
+    - cron: '*/10 4-5 * * *'  # Every 10 minutes between 4am-6am
+    
+    # Daytime commits (9am-12pm every 10-15 minutes)
+    # Using multiple entries for varied timing
+    - cron: '0,10,25,40,55 9-11 * * *'  # Varied intervals in 9am-12pm
+
+jobs:
+  create-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # Needed to push changes back to the repository
+          persist-credentials: true
+          fetch-depth: 0
+      
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+      
+      - name: Create commit
+        run: |
+          # Create a timestamp for the commit
+          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+          
+          # Create or update a file with the timestamp
+          echo "$TIMESTAMP - Automated update" >> commit_log.txt
+          
+          # Add random content to avoid identical commits
+          RANDOM_STRING=$(openssl rand -hex 8)
+          echo "Random content: $RANDOM_STRING" >> commit_log.txt
+          
+          # Add and commit the change
+          git add commit_log.txt
+          git commit -m "Automated update [$TIMESTAMP]"
+      
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
