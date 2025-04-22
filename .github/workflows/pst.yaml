@@ -1,4 +1,4 @@
-name: Automated Commits
+name: Noddy Hack
 
 on:
   workflow_dispatch:
