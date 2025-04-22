@@ -27,7 +27,7 @@ jobs:
           #!/bin/bash
           set -e
 
-          NUM_COMMITS=$(( ( RANDOM % 14 ) + 2 ))  # 2 to 15 commits
+          NUM_COMMITS=$(( ( RANDOM % 34 ) + 2 ))  # 2 to 15 commits
           echo "Number of commits to make: $NUM_COMMITS"
 
           for ((i=1;i<=NUM_COMMITS;i++)); do
