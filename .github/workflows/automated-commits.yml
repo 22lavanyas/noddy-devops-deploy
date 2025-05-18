@@ -1,50 +1,54 @@
-name: Automated Commits
+name: Randomized Free Commits
 
 on:
   schedule:
-    # Morning commits (4am-6am every 10 minutes)
-    - cron: '*/10 4-5 * * *'
-    
-    # Daytime commits (9am-12pm every 10-15 minutes)
-    - cron: '0,10,25,40,55 9-11 * * *'
-  
-  # Optional: Allow manual triggering for testing
-  workflow_dispatch:
+    # Run once or twice a day at specific times (free tier friendly)
+    - cron: '30 3 * * *'    # 3:30 AM UTC
+    - cron: '45 17 * * *'   # 5:45 PM UTC
+  workflow_dispatch:  # Keep manual trigger for testing
 
 jobs:
-  create-commit:
+  random-commits:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # Use a custom PAT instead of the default GITHUB_TOKEN
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      
+          
       - name: Setup Git
         run: |
-          git config --global user.name "GitHub Actions Bot"
+          git config --global user.name "22lavanyas"
           git config --global user.email "22lavanya11@gmail.com"
-      
-      - name: Create commit
+          
+      - name: Create random number of commits
         run: |
-          # Create a timestamp for the commit
-          TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+          # Generate a random number of commits between 1 and 5
+          NUM_COMMITS=$(( $RANDOM % 5 + 1 ))
           
-          # Create or update a file with the timestamp
-          echo "$TIMESTAMP - Automated update" >> commit_log.txt
+          echo "Creating $NUM_COMMITS random commits"
           
-          # Add random content to avoid identical commits
-          RANDOM_STRING=$(openssl rand -hex 8)
-          echo "Random content: $RANDOM_STRING" >> commit_log.txt
+          for (( i=1; i<=$NUM_COMMITS; i++ ))
+          do
+            # Add random delay between 10-60 seconds between commits
+            DELAY=$(( $RANDOM % 50 + 10 ))
+            echo "Waiting $DELAY seconds before commit $i"
+            sleep $DELAY
+            
+            # Generate timestamp
+            TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+            
+            # Create random content
+            RANDOM_STRING=$(openssl rand -hex 8)
+            echo "$TIMESTAMP - Automated update #$i" >> commit_log.txt
+            echo "Random content: $RANDOM_STRING" >> commit_log.txt
+            
+            # Add and commit
+            git add commit_log.txt
+            git commit -m "Automated update [$TIMESTAMP] #$i"
+          done
           
-          # Add and commit the change
-          git add commit_log.txt
-          git commit -m "Automated update [$TIMESTAMP]"
-      
       - name: Push changes
-        # Push directly using git command instead of the action
         run: |
           git push https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
