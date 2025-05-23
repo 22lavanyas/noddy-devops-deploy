@@ -1,4 +1,4 @@
-name: Randomized Free Commits
+name: automate
 
 on:
   schedule:
